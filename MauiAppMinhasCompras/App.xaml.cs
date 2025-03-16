@@ -6,6 +6,7 @@ namespace MauiAppMinhasCompras
     {
         static SQLiteDatabaseHelper _db;
 
+
         public static SQLiteDatabaseHelper Db
         {
             get
@@ -23,6 +24,7 @@ namespace MauiAppMinhasCompras
             }
         }
 
+
         public App()
         {
             InitializeComponent();
@@ -31,5 +33,15 @@ namespace MauiAppMinhasCompras
             MainPage = new NavigationPage(new Views.ListaProduto());
         }
 
+        protected override Window CreateWindow(IActivationState? activationState)
+        {
+            var window = base.CreateWindow(activationState);
+
+            window.Width = 450;
+            window.Height = 600;
+
+            return window;
+
+        }
     }
 }
