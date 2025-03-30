@@ -6,7 +6,9 @@ namespace MauiAppMinhasCompras.Views;
 public partial class ListaProduto : ContentPage
 {
 	ObservableCollection<Produto> lista = new ObservableCollection<Produto>();
-	public ListaProduto()
+    private object categoria;
+
+    public ListaProduto()
 	{
 		InitializeComponent();
 
@@ -50,7 +52,9 @@ public partial class ListaProduto : ContentPage
 		
 		string q = e.NewTextValue;
 
-		lista.Clear();
+            lst_produtos.IsRefreshing = true;
+
+            lista.Clear();
 
         List<Produto> tmp = await App.Db.Search(q);
 
@@ -59,6 +63,10 @@ public partial class ListaProduto : ContentPage
         catch (Exception ex)
         {
 			await DisplayAlert("Ops", ex.Message, "OK");
+        }
+        finally
+        {
+            lst_produtos.IsRefreshing = false;
         }
     }
 
@@ -111,5 +119,50 @@ public partial class ListaProduto : ContentPage
         {
            DisplayAlert("Ops", ex.Message, "OK");
         }
+    }
+
+    private async void lst_produtos_Refreshing(object sender, EventArgs e)
+    {
+        try
+        {
+
+            lista.Clear();
+
+            List<Produto> tmp = await App.Db.GetAll();
+
+            tmp.ForEach(i => lista.Add(i));
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Ops", ex.Message, "OK");
+        } finally 
+        {
+            lst_produtos.IsRefreshing = false;
+        }
+    }
+
+    private async void ToolbarItem_Clicked_2(object sender, EventArgs e)
+    {
+
+        {
+            // Agrupa os produtos pela categoria e calcula o total por grupo
+            var totaisPorCategoria = lista
+                .GroupBy(produto => produto.Categoria) // Agrupa pela propriedade Categoria
+                .Select(grupo => new
+                {
+                    Categoria = grupo.Key,               // A categoria
+                    Total = grupo.Sum(produto => produto.Total) // Soma dos valores de 'Total' de cada produto
+                });
+
+            // Gera uma mensagem para exibir os totais por categoria
+            string msg = string.Join("\n", totaisPorCategoria
+                .Select(grupo => $"Categoria: {grupo.Categoria}, Total: {grupo.Total:C}"));
+
+            // Exibe o resultado em uma mensagem
+            DisplayAlert("Totais por Categoria", msg, "OK");
+        }
+
+       
+
     }
 }
